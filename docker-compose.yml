@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  express:
+    image: kcardamone/express-basic
+    tty: true
+    volumes:
+      - ./node-nginx:/usr/src/app
+    command: node index.js
+    build:
+      context: ./node-nginx
+      dockerfile: dockerfile
+    container_name: express
+    networks:
+      - nodenetwork
+
+  nginx:
+    image: kcardamone/nginx-node
+    build:
+      context: ./nginx-node
+      dockerfile: dockerfile
+    container_name: nginx
+    ports:
+      - "8080:80"
+    networks:
+      - nodenetwork
+
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - nodenetwork
+
+networks:
+  nodenetwork:
+    driver: bridge
